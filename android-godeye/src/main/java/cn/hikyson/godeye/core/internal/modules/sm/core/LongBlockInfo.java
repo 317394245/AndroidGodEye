@@ -104,11 +104,11 @@ public class LongBlockInfo implements Serializable {
      *
      * @deprecated
      */
-    public String generateKey() {
-        Iterator<Map.Entry<Long, List<StackTraceElement>>> iterator = mThreadStackEntries.entrySet().iterator();
-        if (iterator.hasNext()) {
-            return String.valueOf(iterator.next().getValue().hashCode());
-        }
-        return "";
-    }
+//    public String generateKey() {
+//        Iterator<Map.Entry<Long, List<StackTraceElement>>> iterator = mThreadStackEntries.entrySet().iterator();
+//        if (iterator.hasNext()) {
+//            return String.valueOf(iterator.next().getValue().hashCode());
+//        }
+//        return "";
+//    }
 }

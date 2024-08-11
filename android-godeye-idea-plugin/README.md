@@ -1,1 +1,1 @@
-prepare plugin module for deployment
+prepare plugin module for deployment[AndroidGodEye_plugin.bat](AndroidGodEye_plugin.bat)
