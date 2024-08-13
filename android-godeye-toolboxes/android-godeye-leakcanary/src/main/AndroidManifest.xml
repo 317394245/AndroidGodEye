@@ -10,10 +10,10 @@
             android:enabled="false"
             android:exported="false" />
 
-        <activity
-            android:name="leakcanary.internal.activity.LeakActivity"
-            android:enabled="false"
-            android:exported="false" />
+<!--        <activity-->
+<!--            android:name="leakcanary.internal.activity.LeakActivity"-->
+<!--            android:enabled="false"-->
+<!--            android:exported="false" />-->
 
         <provider
             android:name="leakcanary.internal.AppWatcherInstaller$MainProcess"

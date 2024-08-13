@@ -14,8 +14,8 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     compileOptions {
-        targetCompatibility = "17"
-        sourceCompatibility = "17"
+        targetCompatibility = 17
+        sourceCompatibility = 17
     }
     signingConfigs {
         release {
@@ -66,7 +66,7 @@ dependencies {
     implementation 'com.google.android.material:material:1.0.0'
     implementation 'com.jakewharton:butterknife:10.2.3'
     annotationProcessor 'com.jakewharton:butterknife-compiler:10.2.3'
-    implementation 'com.squareup.okhttp3:okhttp:3.14.2'
+    implementation 'com.squareup.okhttp3:okhttp:4.12.0'
     implementation 'io.reactivex.rxjava2:rxjava:2.2.2'
     implementation 'io.reactivex.rxjava2:rxandroid:2.1.0'
 
@@ -75,6 +75,7 @@ dependencies {
     implementation project(':android-godeye-toolboxes:android-godeye-okhttp')
     implementation project(':android-godeye-toolboxes:android-godeye-xcrash')
     debugImplementation project(':android-godeye-toolboxes:android-godeye-leakcanary')
+    implementation(platform("org.jetbrains.kotlin:kotlin-bom:1.9.20"))
 }
 
 apply plugin: 'cn.hikyson.methodcanary.plugin'
