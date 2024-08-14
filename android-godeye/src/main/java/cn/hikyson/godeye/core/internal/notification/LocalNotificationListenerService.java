@@ -1,5 +1,6 @@
 package cn.hikyson.godeye.core.internal.notification;
 
+import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.Service;
 import android.content.Intent;
@@ -43,6 +44,7 @@ public class LocalNotificationListenerService extends Service {
         mCount = 0;
     }
 
+    @SuppressLint("ForegroundServiceType")
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (intent == null) {
