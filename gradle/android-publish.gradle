@@ -10,29 +10,125 @@ apply plugin: 'maven-publish'
 apply plugin: 'digital.wup.android-maven-publish'
 apply plugin: 'signing'
 
-/**
- * Setup custom maven repo
- */
 
-publishing {
-    publications {
+def pomConfig = {
+    scm {
+        url POM_SCM_URL
+        tag POM_SCM_COMMIT
+    }
 
-        android.libraryVariants.all { variant ->
-            "maven${variant.name.capitalize()}Aar"(MavenPublication) {
-                groupId = project.GROUP
-                artifactId = project.name
-                version = project.VERSION_NAME
-
-                artifact "build/outputs/aar/${project.name}-${variant.name.capitalize()}.aar"
-            }
+    licenses {
+        license {
+            name POM_LICENCE_NAME
+            url POM_LICENCE_URL
+            distribution POM_LICENCE_DIST
         }
     }
 
-    repositories {
-        maven {
-            name "proMaven"
-            url "${rootProject.file("localMaven")}"
+    developers {
+        developer {
+            id POM_DEVELOPER_ID
+            name POM_DEVELOPER_NAME
         }
+    }
+
+    name POM_NAME
+    url POM_URL
+}
+
+//生成文档注释
+task androidJavadocs(type: Javadoc) {
+    failOnError = false
+    options.encoding("UTF-8")
+    options.charSet("UTF-8")
+    source = android.sourceSets.main.java.srcDirs
+    ext.androidJar = "${android.sdkDirectory}/platforms/${android.compileSdkVersion}/android.jar"
+    classpath += files(ext.androidJar)
+}
+//将文档打包成jar
+task androidJavadocsJar(type: Jar, dependsOn: androidJavadocs) {
+    archiveClassifier.set('javadoc')
+    from androidJavadocs.destinationDir
+}
+
+//将源码打包，这一点对kotlin来说很重要，否则业务侧无法看到源码
+task androidSourcesJar(type: Jar) {
+    archiveClassifier.set('sources')
+    from android.sourceSets.main.java.srcDirs
+}
+
+/**
+ * Setup custom maven repo
+ */
+afterEvaluate {
+    publishing {
+        publications {
+            android.libraryVariants.all { variant ->
+                "maven${variant.name.capitalize()}Aar"(MavenPublication) {
+                    groupId = project.GROUP
+                    artifactId = project.name
+                    version = project.VERSION_NAME
+
+                    artifact(androidSourcesJar)//将源码打包进aar，如果不需要可以去掉
+//                    artifact(androidJavadocsJar)//将注释打包进aar，如果不需要可以去掉
+                    artifact "build/outputs/aar/${project.name}-${variant.name.capitalize()}.aar"
+
+                    pom.withXml {
+
+                            def dependenciesNode = asNode().appendNode('dependencies')
+
+                            def scopes = []
+                            if (configurations.hasProperty("api")) {
+                                scopes.add(configurations.api)
+                            }
+                            if (configurations.hasProperty("implementation")) {
+                                scopes.add(configurations.implementation)
+                            }
+                            if (configurations.hasProperty("debugImplementation")) {
+                                scopes.add(configurations.debugImplementation)
+                            }
+                            if (configurations.hasProperty("releaseImplementation")) {
+                                scopes.add(configurations.releaseImplementation)
+                            }
+
+                            scopes.each { scope ->
+                                scope.allDependencies.each {
+                                    if (it instanceof ModuleDependency) {
+                                        boolean isTransitive = ((ModuleDependency) it).transitive
+                                        if (!isTransitive) {
+                                            println "<<<< not transitive dependency: [${it.group}, ${it.name}, ${it.version}]"
+                                            return
+                                        }
+                                    }
+
+                                    if (it.group == "${project.rootProject.name}.libs" || it.version == 'unspecified') {
+                                        return
+                                    }
+
+                                    if (it.group && it.name && it.version) {
+                                        def dependencyNode = dependenciesNode.appendNode('dependency')
+                                        dependencyNode.appendNode('groupId', it.group)
+                                        dependencyNode.appendNode('artifactId', it.name)
+                                        dependencyNode.appendNode('version', it.version)
+                                        dependencyNode.appendNode('scope', scope.name)
+                                    }
+                                }
+                            }
+
+                        asNode().children().last() + pomConfig
+                        asNode().appendNode('description', POM_DESCRIPTION) // Needed by MavenCentral
+
+                    }
+
+                }
+            }
+        }
+
+        repositories {
+            maven {
+                name "proMaven"
+                url "${rootProject.file("localMaven")}"
+            }
 //    maven {
 //        name "traseMaven"
 //        url "https://nexus.trasre.com/repository/os-release/"
@@ -41,9 +137,9 @@ publishing {
 //            password "Asla1208-"
 //        }
 //    }
+        }
     }
 }
-
 task buildAndPublishToLocalMaven(type: Copy, dependsOn: ['publishToMavenLocal']) {
     group = 'publishing'
 
